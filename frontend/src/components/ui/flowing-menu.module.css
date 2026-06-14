@@ -1,0 +1,104 @@
+/* ─── Flowing Menu — reactbits.dev orijinal stili ──────────────────────────── */
+
+.menuWrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.menuItem {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 -1px white;
+}
+
+.menuItemLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+    font-size: 4vh;
+}
+
+.menuItemLink:hover {
+    color: #060010;
+}
+
+.menuItemLink:focus:not(:focus-visible) {
+    color: white;
+}
+
+.marquee {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: white;
+    transform: translate3d(0, 101%, 0);
+}
+
+.marqueeInnerWrap {
+    height: 100%;
+    width: 200%;
+    display: flex;
+    transform: translateX(0);
+}
+
+.marqueeInner {
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: 100%;
+    width: 200%;
+    will-change: transform;
+    animation: marquee 15s linear infinite;
+}
+
+.marquee span {
+    color: #060010;
+    white-space: nowrap;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 4vh;
+    line-height: 1.2;
+    padding: 1vh 1vw 0;
+}
+
+.marqueeImg {
+    width: 200px;
+    height: 7vh;
+    margin: 2em 2vw;
+    padding: 1em 0;
+    border-radius: 50px;
+    background-size: cover;
+    background-position: 50% 50%;
+}
+
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
