@@ -27,6 +27,8 @@ import {
     IconLock,
     IconFileText,
     IconHelp,
+    IconInbox,
+    IconArrowRight,
 } from "@tabler/icons-react";
 
 const API = "http://localhost:5156/api";
@@ -158,7 +160,7 @@ export default function DestekPage() {
         setBasari("");
         setGonderiliyor(true);
         try {
-            const r = await fetch(`${API}/Support/mesaj-gonder`, {
+            const r = await fetch(`${API}/Support/talep-olustur`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -169,7 +171,7 @@ export default function DestekPage() {
                 setHata(txt || "Mesaj gönderilemedi.");
                 return;
             }
-            setBasari("Talebiniz alındı. Ekibimiz en kısa sürede e-posta yoluyla size dönüş yapacaktır.");
+            setBasari("Talebiniz alındı. 'Taleplerim' sayfasından ekibimizin yanıtını takip edebilirsiniz.");
             setMesaj("");
             setKonu("Genel Soru");
         } catch {
@@ -188,13 +190,28 @@ export default function DestekPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-6"
                 >
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center gap-1.5 text-[13px] text-white/50 hover:text-white/90 transition-colors mb-4"
-                    >
-                        <IconArrowLeft className="w-4 h-4" />
-                        Dashboard
-                    </Link>
+                    <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+                        <Link
+                            href="/dashboard"
+                            className="inline-flex items-center gap-1.5 text-[13px] text-white/50 hover:text-white/90 transition-colors"
+                        >
+                            <IconArrowLeft className="w-4 h-4" />
+                            Dashboard
+                        </Link>
+                        <Link
+                            href="/dashboard/destek/taleplerim"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[12.5px] font-semibold transition-all hover:scale-[1.02]"
+                            style={{
+                                background: "linear-gradient(135deg, rgba(15,23,42,0.7), rgba(2,6,16,0.7))",
+                                border: "1px solid rgba(226,232,240,0.18)",
+                                color: "#e2e8f0",
+                            }}
+                        >
+                            <IconInbox className="w-4 h-4" />
+                            Taleplerim
+                            <IconArrowRight className="w-3.5 h-3.5 opacity-60" />
+                        </Link>
+                    </div>
                 </motion.div>
 
                 {/* Hero kartı */}

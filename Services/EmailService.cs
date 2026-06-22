@@ -10,6 +10,7 @@ namespace InsecASPNET.Services
         // Frontend mesajdaki adresi DEĞİL, kayıtlı kullanıcının email'ini gönderiyor —
         // gönderen sahte değil, doğrulanmış kullanıcı.
         Task SendSupportMessageAsync(string fromName, string fromEmail, string konu, string mesaj);
+        Task SendSupportReplyAsync(string toEmail, string toName, string konu, string yanit, int ticketId);
     }
 
     public class EmailService : IEmailService
@@ -111,6 +112,49 @@ namespace InsecASPNET.Services
             // Admin doğrudan reply atınca müşteriye gitsin
             message.ReplyToList.Add(new MailAddress(fromEmail));
 
+            await client.SendMailAsync(message);
+        }
+
+        public async Task SendSupportReplyAsync(string toEmail, string toName, string konu, string yanit, int ticketId)
+        {
+            var smtpHost = _configuration["Email:SmtpHost"];
+            var smtpPort = int.Parse(_configuration["Email:SmtpPort"]!);
+            var senderEmail = _configuration["Email:SenderEmail"];
+            var senderName = _configuration["Email:SenderName"];
+            var appPassword = _configuration["Email:AppPassword"];
+
+            var client = new SmtpClient(smtpHost, smtpPort)
+            {
+                Credentials = new NetworkCredential(senderEmail, appPassword),
+                EnableSsl = true
+            };
+
+            string escape(string s) => System.Net.WebUtility.HtmlEncode(s ?? "");
+            var talepNo = $"DTK-{ticketId:D6}";
+
+            var message = new MailMessage
+            {
+                From = new MailAddress(senderEmail!, senderName),
+                Subject = $"[inSEC] Destek Talebinize Yanıt — {konu}",
+                IsBodyHtml = true,
+                Body = $@"
+                    <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto;'>
+                        <h2 style='color: #0ea5e9;'>inSEC — Destek Ekibi</h2>
+                        <p>Merhaba <strong>{escape(toName)}</strong>,</p>
+                        <p>{escape(talepNo)} numaralı <strong>{escape(konu)}</strong> konulu destek talebinize ekibimizin yanıtı aşağıdadır:</p>
+                        <div style='background: #f7f9fc; border-left: 4px solid #0ea5e9; border-radius: 4px; padding: 16px; margin: 16px 0; white-space: pre-wrap;'>
+                            {escape(yanit)}
+                        </div>
+                        <p style='color: #666; font-size: 14px;'>
+                            Talebinizin tüm yazışmalarını hesabınızdaki <em>Destek</em> sayfasından görüntüleyebilirsiniz.
+                        </p>
+                        <p style='color: #999; font-size: 12px; margin-top: 24px;'>
+                            Bu e-posta inSEC destek sisteminden otomatik gönderilmiştir.
+                        </p>
+                    </div>"
+            };
+
+            message.To.Add(toEmail);
             await client.SendMailAsync(message);
         }
     }

@@ -135,7 +135,7 @@ function urunMetadata(urun: Product): {
         return {
             Icon: IconHome,
             aciklama: urun.productDescription ?? "Zorunlu deprem sigortası",
-            image: "https://images.unsplash.com/photo-1517321094803-d8b3a59076e6?w=600&q=80",
+            image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80",
         };
     if (ad.includes("konut") || ad.includes("ev"))
         return {

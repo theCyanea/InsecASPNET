@@ -39,19 +39,13 @@ function Baslik({ musteri, altYazi }: { musteri: Musteri | null; altYazi: string
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="mb-8 flex items-end justify-between max-w-5xl mx-auto w-full"
+            className="mb-8"
         >
-            <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                    Hoş geldin, {musteri?.adi}
-                    {/* Platin nokta — önceden sky-400'dü, premium hissiyat için gümüş */}
-                    <span style={{ color: "#cbd5e1" }}>.</span>
-                </h1>
-                <p className="text-white/45 text-sm mt-1">{altYazi}</p>
-            </div>
-            <p className="text-white/35 text-sm hidden lg:block">
-                {new Date().toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}
-            </p>
+            <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
+                Hoş geldin, {musteri?.adi}
+                <span style={{ color: "#cbd5e1" }}>.</span>
+            </h1>
+            <p className="text-white/50 text-base mt-2">{altYazi}</p>
         </motion.div>
     );
 }

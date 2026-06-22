@@ -35,11 +35,29 @@ namespace InsecASPNET.Controllers
             return int.TryParse(s, out var id) ? id : null;
         }
 
-        private static readonly string[] IzinliHasarTurleri =
+        private static readonly string[] TumHasarTurleri =
         {
             "Trafik Kazası", "Yangın", "Hırsızlık", "Doğal Afet",
             "Sağlık", "Cam Kırılması", "Diğer"
         };
+
+        private static readonly Dictionary<string, string[]> UrunHasarMap = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["KASKO"]   = new[] { "Trafik Kazası", "Hırsızlık", "Doğal Afet", "Cam Kırılması", "Yangın", "Diğer" },
+            ["TRAFIK"]  = new[] { "Trafik Kazası", "Diğer" },
+            ["SAGLIK"]  = new[] { "Sağlık", "Diğer" },
+            ["DASK"]    = new[] { "Doğal Afet", "Yangın", "Diğer" },
+            ["KONUT"]   = new[] { "Yangın", "Hırsızlık", "Doğal Afet", "Cam Kırılması", "Diğer" },
+            ["SEYAHAT"] = new[] { "Sağlık", "Hırsızlık", "Doğal Afet", "Diğer" },
+        };
+
+        private static string[] IzinliHasarTurleriGetir(string? productCode)
+        {
+            if (!string.IsNullOrWhiteSpace(productCode) &&
+                UrunHasarMap.TryGetValue(productCode, out var izinliler))
+                return izinliler;
+            return TumHasarTurleri;
+        }
 
         // musterinin policesine hasar kaydi olusturmasi icin kullanilan endpoint
         [Authorize]
@@ -50,7 +68,9 @@ namespace InsecASPNET.Controllers
             var musteriId = MevcutMusteriId();
             if (musteriId == null) return Unauthorized();
 
-            var police = await _context.Policies.FindAsync(dto.PolicyId);
+            var police = await _context.Policies
+                .Include(p => p.Product)
+                .FirstOrDefaultAsync(p => p.Id == dto.PolicyId);
             if (police == null || !police.IsActive)
                 return NotFound("Poliçe bulunamadı veya iptal edilmiş.");
 
@@ -64,7 +84,7 @@ namespace InsecASPNET.Controllers
                 return BadRequest("Hasar tarihi gelecek bir tarih olamaz.");
 
             // hasar tarihi gecerli police tarihinde olmali, yoksa gecmis senenin kazasini rapor etme gibi sacma bir acık olusur
-            if (dto.HasarTarihi < police.StartDate || dto.HasarTarihi > police.EndDate)
+            if (dto.HasarTarihi.Date < police.StartDate.Date || dto.HasarTarihi.Date > police.EndDate.Date)
                 return BadRequest($"Hasar tarihi poliçe geçerlilik aralığında olmalı ({police.StartDate:dd.MM.yyyy} - {police.EndDate:dd.MM.yyyy}).");
 
             // sigorta mevzuatına göre belli bir zaman icinde hasar kaydi olusmali yani zamanasımı yapılamaz
@@ -87,8 +107,9 @@ namespace InsecASPNET.Controllers
             if (aciklama.Length > 2000)
                 return BadRequest("Açıklama en fazla 2000 karakter olabilir.");
 
-            if (!IzinliHasarTurleri.Contains(dto.HasarTuru))
-                return BadRequest("Geçersiz hasar türü.");
+            var izinliTurler = IzinliHasarTurleriGetir(police.Product?.ProductCode);
+            if (!izinliTurler.Contains(dto.HasarTuru))
+                return BadRequest("Bu poliçe türü için geçersiz hasar türü.");
 
             // yeni hasar kaydi burada olusur
             var yeniHasar = new Claim

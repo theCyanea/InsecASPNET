@@ -54,5 +54,38 @@ namespace InsecASPNET.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { Mesaj = "Ürün bilgileri ve fiyatı başarıyla güncellendi!", GuncelFiyat = urun.Price });
         }
+
+        public class TeminatGuncelleDto
+        {
+            public decimal CoveragePrice { get; set; }
+            public bool IsRequired { get; set; }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("teminat-guncelle/{coverageId}")]
+        public async Task<IActionResult> TeminatGuncelle(int coverageId, TeminatGuncelleDto dto)
+        {
+            var teminat = await _context.Coverages.FindAsync(coverageId);
+            if (teminat == null)
+                return NotFound("Teminat bulunamadı.");
+
+            if (dto.CoveragePrice < 0)
+                return BadRequest("Teminat fiyatı negatif olamaz.");
+            if (dto.CoveragePrice > 1_000_000m)
+                return BadRequest("Teminat fiyatı çok yüksek.");
+
+            teminat.CoveragePrice = dto.CoveragePrice;
+            teminat.IsRequired = dto.IsRequired;
+
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                Mesaj = "Teminat güncellendi.",
+                teminat.Id,
+                teminat.CoverageName,
+                teminat.CoveragePrice,
+                teminat.IsRequired
+            });
+        }
     }
 }

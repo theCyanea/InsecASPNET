@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 transition={{ type: "tween", ease: "easeInOut", duration: 0.25 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                className="absolute top-0 left-0 bottom-0 flex flex-col h-full overflow-hidden z-20"
+                className="relative flex-shrink-0 flex flex-col h-full overflow-hidden z-20"
                 style={{
                     background: "#020610",
                     borderRight: "1px solid rgba(255,255,255,0.05)",
@@ -230,7 +230,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </motion.aside>
 
             {/* ── İçerik — ml-[60px] collapsed sidebar kadar offset ───── */}
-            <main className="relative flex-1 overflow-y-auto ml-[60px]" style={{ background: "#040812" }}>
+            <main className="relative flex-1 overflow-y-auto" style={{ background: "#040812" }}>
                 <div className="pointer-events-none fixed inset-0 z-0">
                     <DotPattern
                         width={28}

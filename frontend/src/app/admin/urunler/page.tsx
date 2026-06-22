@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { IconPackage, IconCheck, IconX, IconAlertCircle } from "@tabler/icons-react";
+import { IconPackage, IconCheck, IconX, IconAlertCircle, IconLock, IconLockOpen, IconDeviceFloppy } from "@tabler/icons-react";
 
 const API = "http://localhost:5156/api";
 
@@ -192,7 +192,7 @@ function UrunDuzenleModal({
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="w-full max-w-md rounded-2xl overflow-hidden"
+                className="w-full max-w-xl rounded-2xl overflow-hidden max-h-[90vh] flex flex-col"
                 style={{
                     background: "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(2,6,16,0.98))",
                     border: "1px solid rgba(255,255,255,0.08)",
@@ -206,7 +206,7 @@ function UrunDuzenleModal({
                     </button>
                 </div>
 
-                <div className="p-6 flex flex-col gap-4">
+                <div className="p-6 flex flex-col gap-4 overflow-y-auto">
                     <div>
                         <label className="text-white/65 text-[12px] font-medium mb-1.5 block uppercase tracking-wider">
                             Ürün Adı
@@ -245,23 +245,20 @@ function UrunDuzenleModal({
                     </div>
 
                     {urun.coverages && urun.coverages.length > 0 && (
-                        <div className="rounded-xl px-3 py-2.5"
+                        <div className="rounded-xl px-3 py-3"
                             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
                         >
-                            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1.5">
-                                Mevcut teminatlar (read-only)
-                            </p>
-                            <div className="flex flex-col gap-1">
+                            <div className="flex items-center justify-between mb-2.5">
+                                <p className="text-white/55 text-[10.5px] uppercase tracking-wider font-medium">
+                                    Teminatlar ({urun.coverages.length})
+                                </p>
+                                <p className="text-white/30 text-[10px]">
+                                    Her satırı ayrı kaydedin
+                                </p>
+                            </div>
+                            <div className="flex flex-col gap-2">
                                 {urun.coverages.map((c) => (
-                                    <div key={c.id} className="flex items-center justify-between text-[11.5px]">
-                                        <span className="text-white/65">
-                                            {c.coverageName}
-                                            {c.isRequired && (
-                                                <span className="ml-1.5 text-[9px] text-amber-300">[zorunlu]</span>
-                                            )}
-                                        </span>
-                                        <span className="text-white/55 tabular-nums">{paraFormat(c.coveragePrice)}</span>
-                                    </div>
+                                    <TeminatSatiri key={c.id} teminat={c} />
                                 ))}
                             </div>
                         </div>
@@ -310,5 +307,146 @@ function UrunDuzenleModal({
                 </div>
             </motion.div>
         </motion.div>
+    );
+}
+
+function TeminatSatiri({ teminat }: { teminat: Coverage }) {
+    const [fiyat, setFiyat] = useState(teminat.coveragePrice.toString());
+    const [zorunlu, setZorunlu] = useState(teminat.isRequired);
+    const [orijinalFiyat, setOrijinalFiyat] = useState(teminat.coveragePrice);
+    const [orijinalZorunlu, setOrijinalZorunlu] = useState(teminat.isRequired);
+    const [gonderiliyor, setGonderiliyor] = useState(false);
+    const [hata, setHata] = useState("");
+    const [basari, setBasari] = useState(false);
+
+    const fiyatNum = parseFloat(fiyat);
+    const degisti =
+        !isNaN(fiyatNum) &&
+        (fiyatNum !== orijinalFiyat || zorunlu !== orijinalZorunlu);
+
+    const kaydet = async () => {
+        setHata("");
+        setBasari(false);
+        if (isNaN(fiyatNum) || fiyatNum < 0) {
+            setHata("Geçersiz fiyat.");
+            return;
+        }
+        setGonderiliyor(true);
+        try {
+            const r = await fetch(`${API}/Products/teminat-guncelle/${teminat.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ coveragePrice: fiyatNum, isRequired: zorunlu }),
+            });
+            if (!r.ok) {
+                const txt = await r.text().catch(() => "");
+                setHata(txt || "Güncellenemedi.");
+                return;
+            }
+            setOrijinalFiyat(fiyatNum);
+            setOrijinalZorunlu(zorunlu);
+            setBasari(true);
+            setTimeout(() => setBasari(false), 2000);
+        } catch {
+            setHata("Bağlantı hatası.");
+        } finally {
+            setGonderiliyor(false);
+        }
+    };
+
+    return (
+        <div className="rounded-lg px-3 py-2.5"
+            style={{
+                background: basari
+                    ? "rgba(16,185,129,0.05)"
+                    : degisti
+                        ? "rgba(245,158,11,0.04)"
+                        : "rgba(255,255,255,0.02)",
+                border: basari
+                    ? "1px solid rgba(16,185,129,0.25)"
+                    : degisti
+                        ? "1px solid rgba(245,158,11,0.2)"
+                        : "1px solid rgba(255,255,255,0.05)",
+            }}
+        >
+            <div className="flex items-center gap-2 mb-2">
+                <span className="text-white/85 text-[12.5px] font-medium flex-1 truncate">
+                    {teminat.coverageName}
+                </span>
+                {basari && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-300 font-semibold">
+                        <IconCheck className="w-3 h-3" />
+                        Kaydedildi
+                    </span>
+                )}
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex-1 min-w-[120px]">
+                    <div className="relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 text-[11px]">₺</span>
+                        <input
+                            type="number"
+                            value={fiyat}
+                            onChange={(e) => setFiyat(e.target.value)}
+                            step="0.01"
+                            min="0"
+                            disabled={gonderiliyor}
+                            className="w-full rounded-lg pl-6 pr-2 py-1.5 text-[12px] outline-none focus:border-white/30 tabular-nums"
+                            style={{
+                                background: "rgba(255,255,255,0.03)",
+                                border: "1px solid rgba(255,255,255,0.08)",
+                                color: "#ffffff",
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => setZorunlu(!zorunlu)}
+                    disabled={gonderiliyor}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:scale-[1.02]"
+                    style={{
+                        background: zorunlu ? "rgba(245,158,11,0.1)" : "rgba(255,255,255,0.03)",
+                        border: zorunlu ? "1px solid rgba(245,158,11,0.3)" : "1px solid rgba(255,255,255,0.08)",
+                        color: zorunlu ? "rgb(252,211,77)" : "rgba(255,255,255,0.55)",
+                    }}
+                >
+                    {zorunlu ? <IconLock className="w-3 h-3" /> : <IconLockOpen className="w-3 h-3" />}
+                    {zorunlu ? "Zorunlu" : "Opsiyonel"}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={kaydet}
+                    disabled={gonderiliyor || !degisti}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                        background: degisti
+                            ? "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)"
+                            : "rgba(255,255,255,0.04)",
+                        color: degisti ? "#0f172a" : "rgba(255,255,255,0.4)",
+                        border: degisti ? "1px solid rgba(226,232,240,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                    }}
+                >
+                    {gonderiliyor ? (
+                        <span className="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
+                            style={{ borderColor: "#0f172a", borderTopColor: "transparent" }} />
+                    ) : (
+                        <IconDeviceFloppy className="w-3 h-3" />
+                    )}
+                    Kaydet
+                </button>
+            </div>
+
+            {hata && (
+                <p className="mt-1.5 text-[10.5px] text-red-300 inline-flex items-center gap-1">
+                    <IconAlertCircle className="w-3 h-3" />
+                    {hata}
+                </p>
+            )}
+        </div>
     );
 }

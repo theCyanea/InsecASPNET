@@ -19,6 +19,7 @@ import {
     IconLogout,
     IconShield,
     IconArrowLeft,
+    IconLifebuoy,
 } from "@tabler/icons-react";
 
 const API = "http://localhost:5156/api";
@@ -28,6 +29,7 @@ const NAV = [
     { label: "Müşteriler",         href: "/admin/musteriler", Icon: IconUsers },
     { label: "Poliçeler",          href: "/admin/policeler",  Icon: IconFileText },
     { label: "Hasarlar",           href: "/admin/hasarlar",   Icon: IconAlertTriangle },
+    { label: "Destek Talepleri",   href: "/admin/destek",     Icon: IconLifebuoy },
     { label: "Ürünler",            href: "/admin/urunler",    Icon: IconPackage },
     { label: "Bildirim Yayını",    href: "/admin/bildirim",   Icon: IconBell },
 ];

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
     IconSearch,
@@ -11,6 +12,8 @@ import {
     IconClock,
     IconRefresh,
     IconAlertCircle,
+    IconArrowRight,
+    IconPhoto,
 } from "@tabler/icons-react";
 
 const API = "http://localhost:5156/api";
@@ -336,44 +339,57 @@ function HasarKart({
                 </div>
             )}
 
-            {/* Fotoğraflar (varsa) */}
             {hasar.images && hasar.images.length > 0 && (
-                <p className="text-white/35 text-[10.5px] mb-3">
+                <p className="text-white/35 text-[10.5px] mb-3 inline-flex items-center gap-1">
+                    <IconPhoto className="w-3 h-3" />
                     {hasar.images.length} fotoğraf eklenmiş
                 </p>
             )}
 
-            {/* State machine aksiyon butonları */}
-            <div className="flex items-center gap-2 flex-wrap">
-                {incelemede && (
-                    <>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                    {incelemede && (
+                        <>
+                            <AksiyonButton
+                                Icon={IconCheck}
+                                label="Onayla"
+                                renk="emerald"
+                                onClick={() => onAksiyon("Onaylandı")}
+                            />
+                            <AksiyonButton
+                                Icon={IconX}
+                                label="Reddet"
+                                renk="red"
+                                onClick={() => onAksiyon("Reddedildi")}
+                            />
+                        </>
+                    )}
+                    {onaylandi && (
                         <AksiyonButton
-                            Icon={IconCheck}
-                            label="Onayla"
+                            Icon={IconCash}
+                            label="Ödemeyi Tamamla"
                             renk="emerald"
-                            onClick={() => onAksiyon("Onaylandı")}
+                            onClick={() => onAksiyon("Ödendi")}
                         />
-                        <AksiyonButton
-                            Icon={IconX}
-                            label="Reddet"
-                            renk="red"
-                            onClick={() => onAksiyon("Reddedildi")}
-                        />
-                    </>
-                )}
-                {onaylandi && (
-                    <AksiyonButton
-                        Icon={IconCash}
-                        label="Ödemeyi Tamamla"
-                        renk="emerald"
-                        onClick={() => onAksiyon("Ödendi")}
-                    />
-                )}
-                {!incelemede && !onaylandi && (
-                    <p className="text-white/35 text-[11.5px]">
-                        Bu dosya kapanmış, başka aksiyon yok.
-                    </p>
-                )}
+                    )}
+                    {!incelemede && !onaylandi && (
+                        <p className="text-white/35 text-[11.5px]">
+                            Bu dosya kapanmış, başka aksiyon yok.
+                        </p>
+                    )}
+                </div>
+                <Link
+                    href={`/admin/hasarlar/${hasar.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all hover:scale-[1.03]"
+                    style={{
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "rgba(255,255,255,0.85)",
+                    }}
+                >
+                    Detayları Aç
+                    <IconArrowRight className="w-3.5 h-3.5" />
+                </Link>
             </div>
         </motion.div>
     );

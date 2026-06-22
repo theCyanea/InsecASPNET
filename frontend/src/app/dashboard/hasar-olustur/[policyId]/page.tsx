@@ -48,7 +48,7 @@ interface PoliceMini {
     };
 }
 
-const HASAR_TURLERI: { value: string; aciklama: string }[] = [
+const TUM_HASAR_TURLERI: { value: string; aciklama: string }[] = [
     { value: "Trafik Kazası", aciklama: "Çarpışma, devrilme, çarpma" },
     { value: "Yangın",        aciklama: "Yangın ve patlama hasarları" },
     { value: "Hırsızlık",     aciklama: "Çalınma veya çalınmaya teşebbüs" },
@@ -57,6 +57,22 @@ const HASAR_TURLERI: { value: string; aciklama: string }[] = [
     { value: "Cam Kırılması", aciklama: "Araç ve konut camı" },
     { value: "Diğer",         aciklama: "Yukarıdakilere uymayan durumlar" },
 ];
+
+const URUN_HASAR_MAP: Record<string, string[]> = {
+    KASKO:    ["Trafik Kazası", "Hırsızlık", "Doğal Afet", "Cam Kırılması", "Yangın", "Diğer"],
+    TRAFIK:   ["Trafik Kazası", "Diğer"],
+    SAGLIK:   ["Sağlık", "Diğer"],
+    DASK:     ["Doğal Afet", "Yangın", "Diğer"],
+    KONUT:    ["Yangın", "Hırsızlık", "Doğal Afet", "Cam Kırılması", "Diğer"],
+    SEYAHAT:  ["Sağlık", "Hırsızlık", "Doğal Afet", "Diğer"],
+};
+
+function hasarTurleriGetir(productCode?: string | null) {
+    if (!productCode) return TUM_HASAR_TURLERI;
+    const izinliler = URUN_HASAR_MAP[productCode.toUpperCase()];
+    if (!izinliler) return TUM_HASAR_TURLERI;
+    return TUM_HASAR_TURLERI.filter((t) => izinliler.includes(t.value));
+}
 
 function paraFormat(n: number) {
     return `₺${n.toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
@@ -160,6 +176,8 @@ export default function HasarOlusturPage({ params }: { params: Promise<{ policyI
                 }
 
                 setPolice(data);
+                const turler = hasarTurleriGetir(data.product?.productCode);
+                setHasarTuru(turler[0]?.value ?? "Diğer");
             } catch {
                 setYuklemeHatasi("Poliçe bilgisi yüklenemedi.");
             } finally {
@@ -346,7 +364,7 @@ export default function HasarOlusturPage({ params }: { params: Promise<{ policyI
                     {/* Hasar türü */}
                     <FormGroup label="Hasar Türü" Icon={IconAlertTriangle}>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {HASAR_TURLERI.map((t) => {
+                            {hasarTurleriGetir(police?.product?.productCode).map((t) => {
                                 const aktif = t.value === hasarTuru;
                                 return (
                                     <button

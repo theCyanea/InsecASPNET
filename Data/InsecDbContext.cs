@@ -21,6 +21,8 @@ namespace InsecASPNET.Data
         public DbSet<InsuredPerson> InsuredPersons { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<SupportTicket> SupportTickets { get; set; }
+        public DbSet<SupportMessage> SupportMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,6 +60,18 @@ namespace InsecASPNET.Data
                 .HasOne(n => n.Customer)
                 .WithMany()
                 .HasForeignKey(n => n.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SupportTicket>()
+                .HasOne(t => t.Customer)
+                .WithMany()
+                .HasForeignKey(t => t.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SupportMessage>()
+                .HasOne(m => m.SupportTicket)
+                .WithMany(t => t.Messages)
+                .HasForeignKey(m => m.SupportTicketId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
